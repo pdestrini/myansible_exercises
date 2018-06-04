@@ -1,0 +1,14 @@
+---
+- hosts: ansible_tomcat
+  tasks:
+    - find:
+        path: /home/userdev/
+        file_type: file
+        recurse: yes
+      register: find_result
+    - file:
+        path: "{{ item.path }}"
+        owner: vagrant
+        group: vagrant
+        mode: 0777
+      with_items: "{{ find_result.files }}"

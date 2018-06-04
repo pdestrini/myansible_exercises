@@ -1,0 +1,9 @@
+---
+- hosts: ansible_tomcat
+  tasks:
+    - file:
+        path: /home/userdev/foo.conf
+        state: touch
+        owner: userdev
+        group: userdev
+        mode: 0644  

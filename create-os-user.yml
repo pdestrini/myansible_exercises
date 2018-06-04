@@ -1,0 +1,16 @@
+---
+- hosts: ansible_tomcat
+  tasks:
+    - name: Create a login user dev
+      user:
+        name: userdev
+        password: '$6$k53WmiI4jUMp9HoB$jRGhUox4UotwK6LrcmPEgT8KiWOqUdlUaS/Qs2jbUVZroMCEWRwkUO1A0mBDXr50skJPBFU0NGMpYs.QfuLPO/'
+        groups: ansible        # Empty by default.
+        state: present
+        shell: /bin/bash       # Defaults to /bin/bash
+        system: no             # Defaults to no
+        createhome: yes        # Defaults to yes
+        home: /home/userdev    # Defaults to /home/<username>
+        move_home: yes
+# Use python passlib to generate sha512-cryp
+# python -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_crypt.using(rounds=5000).hash(getpass.getpass()))"

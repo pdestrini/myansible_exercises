@@ -1,0 +1,50 @@
+---
+- hosts: ansible_tomcat
+  tasks:
+    - name: Make sure that we can connect to the machine
+      ping:
+
+    - name: add group "tomcat"
+      group: name=tomcat
+
+    - name: add user "tomcat"
+      user: name=tomcat group=tomcat createhome=yes
+      become: yes
+
+    - name: copy Tomcat
+      copy: src=./apache-tomcat-8.5.31.tar.gz dest=/opt/apache-tomcat-8.5.31.tar.gz
+
+    - name: Extract Tomcat archive
+      command: tar zxvf /opt/apache-tomcat-8.5.31.tar.gz -C /opt/ creates=/opt/apache-tomcat-8.5.31
+
+    - name: Set Env Java
+      copy: src=java.sh dest=/etc/profile.d/java.sh mode=0775
+
+    - name: Change ownership of Tomcat installation
+      file: path=/opt/apache-tomcat-8.5.31 owner=tomcat group=tomcat state=directory recurse=yes
+
+    - name: Configure Tomcat server
+      template: src=server.xml dest=/opt/apache-tomcat-8.5.31/conf/
+
+    - name: Configure Tomcat users
+      template: src=tomcat-users.xml dest=/opt/apache-tomcat-8.5.31/conf/
+
+    - name: install lsof
+      package:
+        name: lsof
+        state: present
+
+    - name: Get process id running the webserver
+      shell: lsof -t -i:{{http_port}}
+      become: yes
+      ignore_errors: yes
+      register: pid
+
+    - name: Start Tomcat
+      when: pid.stdout == ""
+      shell: |
+         . /etc/profile.d/java.sh
+         nohup /opt/apache-tomcat-8.5.31/bin/startup.sh &
+
+    - name: wait for tomcat to start
+      wait_for: port={{http_port}}
